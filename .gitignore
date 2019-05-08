@@ -24,9 +24,8 @@ __pycache__/
 
 # exclude data from source control by default
 data/*
-!data/raw_snapshots/
-data/raw_snapshots/*
-!data/raw_snapshots/psII_subset
+!data/raw_multiframe/
+#data/raw_multiframe/*
 
 
 # exclude output because they should be reproducible and there's too much
