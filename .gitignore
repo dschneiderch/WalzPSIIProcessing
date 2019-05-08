@@ -1,0 +1,44 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# DotEnv configuration
+.env
+
+# Database
+*.db
+*.rdb
+
+# Pycharm
+.idea
+
+# VS Code
+.vscode/
+.vs/
+
+# Spyder
+.spyproject/
+
+# Jupyter NB Checkpoints
+.ipynb_checkpoints/
+
+# exclude data from source control by default
+data/*
+!data/raw_snapshots/
+data/raw_snapshots/*
+!data/raw_snapshots/psII_subset
+
+
+# exclude output because they should be reproducible and there's too much
+/output/
+
+# Mac OS-specific storage files
+.DS_Store
+
+# Remove R files
+.Rproj*
+.Rhistory
+
+# Remove Dask files
+dask*/
+.Rproj.user
