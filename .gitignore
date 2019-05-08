@@ -28,8 +28,12 @@ data/*
 #data/raw_multiframe/*
 
 
-# exclude output because they should be reproducible and there's too much
-/output/
+# exclude output on default but allow experiment 1 output as examples
+output/*
+!output/psII/
+!output/psII/exp1_psII.csv
+output/psII/pseudocolor_images/*
+!output/psII/pseudocolor_images/experiment1/
 
 # Mac OS-specific storage files
 .DS_Store
