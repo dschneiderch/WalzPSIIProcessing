@@ -45,3 +45,9 @@ output/psII/pseudocolor_images/*
 # Remove Dask files
 dask*/
 .Rproj.user
+
+# image files
+*.tif
+
+# debug folder
+debug/

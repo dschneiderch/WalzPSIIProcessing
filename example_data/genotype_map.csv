@@ -1,0 +1,5 @@
+exp,roi, gtype
+experiment1, 0, WT
+experiment1, 1, m1
+experiment1, 2, m1
+experiment1, 3, WT

@@ -1,49 +1,49 @@
 exp,date,jobdate,anotherdescriptor,imageid,filename,frame,parameter,roi,frame_avg,param_avg,param_std, gtype
-experiment1,2019-05-01,2019-05-01,allframes,1,data\experiment1_20190501_allframes_1.tif,Fo,FvFm,0,12.7574,0.7767,0.0290, WT
-experiment1,2019-05-01,2019-05-01,allframes,1,data\experiment1_20190501_allframes_1.tif,Fo,FvFm,1,29.0332,0.5476,0.1350, m1
-experiment1,2019-05-01,2019-05-01,allframes,1,data\experiment1_20190501_allframes_1.tif,Fo,FvFm,2,35.7438,0.4564,0.1575, m1
-experiment1,2019-05-01,2019-05-01,allframes,1,data\experiment1_20190501_allframes_1.tif,Fo,FvFm,3,12.9887,0.7683,0.0315, WT
-experiment1,2019-05-01,2019-05-01,allframes,2,data\experiment1_20190501_allframes_2.tif,Fm,FvFm,0,57.0742,0.7767,0.0290, WT
-experiment1,2019-05-01,2019-05-01,allframes,2,data\experiment1_20190501_allframes_2.tif,Fm,FvFm,1,63.9596,0.5476,0.1350, m1
-experiment1,2019-05-01,2019-05-01,allframes,2,data\experiment1_20190501_allframes_2.tif,Fm,FvFm,2,63.9634,0.4564,0.1575, m1
-experiment1,2019-05-01,2019-05-01,allframes,2,data\experiment1_20190501_allframes_2.tif,Fm,FvFm,3,55.8562,0.7683,0.0315, WT
-experiment1,2019-05-01,2019-05-01,allframes,7,data\experiment1_20190501_allframes_7.tif,Fp,Y1_ALon,0,55.7731,3.6472,2.2867, WT
-experiment1,2019-05-01,2019-05-01,allframes,7,data\experiment1_20190501_allframes_7.tif,Fp,Y1_ALon,1,64.1226,3.7904,1.7791, m1
-experiment1,2019-05-01,2019-05-01,allframes,7,data\experiment1_20190501_allframes_7.tif,Fp,Y1_ALon,2,64.7938,3.5484,1.9996, m1
-experiment1,2019-05-01,2019-05-01,allframes,7,data\experiment1_20190501_allframes_7.tif,Fp,Y1_ALon,3,54.3884,3.5646,2.4490, WT
-experiment1,2019-05-01,2019-05-01,allframes,8,data\experiment1_20190501_allframes_8.tif,Fmp,Y1_ALon,0,53.6164,3.6472,2.2867, WT
-experiment1,2019-05-01,2019-05-01,allframes,8,data\experiment1_20190501_allframes_8.tif,Fmp,Y1_ALon,1,60.6524,3.7904,1.7791, m1
-experiment1,2019-05-01,2019-05-01,allframes,8,data\experiment1_20190501_allframes_8.tif,Fmp,Y1_ALon,2,61.3472,3.5484,1.9996, m1
-experiment1,2019-05-01,2019-05-01,allframes,8,data\experiment1_20190501_allframes_8.tif,Fmp,Y1_ALon,3,52.4899,3.5646,2.4490, WT
-experiment1,2019-05-01,2019-05-01,allframes,9,data\experiment1_20190501_allframes_9.tif,Fp,Y2_ALon,0,34.2766,3.2093,3.9308, WT
-experiment1,2019-05-01,2019-05-01,allframes,9,data\experiment1_20190501_allframes_9.tif,Fp,Y2_ALon,1,29.9371,5.1380,4.7413, m1
-experiment1,2019-05-01,2019-05-01,allframes,9,data\experiment1_20190501_allframes_9.tif,Fp,Y2_ALon,2,28.7096,5.7608,5.1112, m1
-experiment1,2019-05-01,2019-05-01,allframes,9,data\experiment1_20190501_allframes_9.tif,Fp,Y2_ALon,3,33.2836,2.7587,3.9715, WT
-experiment1,2019-05-01,2019-05-01,allframes,10,data\experiment1_20190501_allframes_10.tif,Fmp,Y2_ALon,0,34.2149,3.2093,3.9308, WT
-experiment1,2019-05-01,2019-05-01,allframes,10,data\experiment1_20190501_allframes_10.tif,Fmp,Y2_ALon,1,29.1036,5.1380,4.7413, m1
-experiment1,2019-05-01,2019-05-01,allframes,10,data\experiment1_20190501_allframes_10.tif,Fmp,Y2_ALon,2,27.7991,5.7608,5.1112, m1
-experiment1,2019-05-01,2019-05-01,allframes,10,data\experiment1_20190501_allframes_10.tif,Fmp,Y2_ALon,3,33.6991,2.7587,3.9715, WT
-experiment1,2019-05-01,2019-05-01,allframes,11,data\experiment1_20190501_allframes_11.tif,Fp,Y3_ALon,0,23.3396,2.1678,4.4107, WT
-experiment1,2019-05-01,2019-05-01,allframes,11,data\experiment1_20190501_allframes_11.tif,Fp,Y3_ALon,1,24.8513,4.5655,5.5363, m1
-experiment1,2019-05-01,2019-05-01,allframes,11,data\experiment1_20190501_allframes_11.tif,Fp,Y3_ALon,2,24.6667,5.8590,5.9215, m1
-experiment1,2019-05-01,2019-05-01,allframes,11,data\experiment1_20190501_allframes_11.tif,Fp,Y3_ALon,3,23.2469,2.2764,4.5237, WT
-experiment1,2019-05-01,2019-05-01,allframes,12,data\experiment1_20190501_allframes_12.tif,Fmp,Y3_ALon,0,24.6768,2.1678,4.4107, WT
-experiment1,2019-05-01,2019-05-01,allframes,12,data\experiment1_20190501_allframes_12.tif,Fmp,Y3_ALon,1,24.7911,4.5655,5.5363, m1
-experiment1,2019-05-01,2019-05-01,allframes,12,data\experiment1_20190501_allframes_12.tif,Fmp,Y3_ALon,2,24.1176,5.8590,5.9215, m1
-experiment1,2019-05-01,2019-05-01,allframes,12,data\experiment1_20190501_allframes_12.tif,Fmp,Y3_ALon,3,24.6425,2.2764,4.5237, WT
-experiment1,2019-05-01,2019-05-01,allframes,13,data\experiment1_20190501_allframes_13.tif,Fp,Y4_ALon,0,19.9612,1.6402,4.1784, WT
-experiment1,2019-05-01,2019-05-01,allframes,13,data\experiment1_20190501_allframes_13.tif,Fp,Y4_ALon,1,22.9819,4.0480,5.6685, m1
-experiment1,2019-05-01,2019-05-01,allframes,13,data\experiment1_20190501_allframes_13.tif,Fp,Y4_ALon,2,23.3233,4.9176,6.0438, m1
-experiment1,2019-05-01,2019-05-01,allframes,13,data\experiment1_20190501_allframes_13.tif,Fp,Y4_ALon,3,20.2739,1.9555,4.5106, WT
-experiment1,2019-05-01,2019-05-01,allframes,14,data\experiment1_20190501_allframes_14.tif,Fmp,Y4_ALon,0,21.9146,1.6402,4.1784, WT
-experiment1,2019-05-01,2019-05-01,allframes,14,data\experiment1_20190501_allframes_14.tif,Fmp,Y4_ALon,1,23.3828,4.0480,5.6685, m1
-experiment1,2019-05-01,2019-05-01,allframes,14,data\experiment1_20190501_allframes_14.tif,Fmp,Y4_ALon,2,23.4683,4.9176,6.0438, m1
-experiment1,2019-05-01,2019-05-01,allframes,14,data\experiment1_20190501_allframes_14.tif,Fmp,Y4_ALon,3,22.1265,1.9555,4.5106, WT
-experiment1,2019-05-01,2019-05-01,allframes,15,data\experiment1_20190501_allframes_15.tif,Fp,Y5_ALon,0,18.4943,1.0798,3.4495, WT
-experiment1,2019-05-01,2019-05-01,allframes,15,data\experiment1_20190501_allframes_15.tif,Fp,Y5_ALon,1,21.9804,3.3046,5.4453, m1
-experiment1,2019-05-01,2019-05-01,allframes,15,data\experiment1_20190501_allframes_15.tif,Fp,Y5_ALon,2,22.0985,4.0936,5.9413, m1
-experiment1,2019-05-01,2019-05-01,allframes,15,data\experiment1_20190501_allframes_15.tif,Fp,Y5_ALon,3,18.8043,1.2367,3.6944, WT
-experiment1,2019-05-01,2019-05-01,allframes,16,data\experiment1_20190501_allframes_16.tif,Fmp,Y5_ALon,0,21.1527,1.0798,3.4495, WT
-experiment1,2019-05-01,2019-05-01,allframes,16,data\experiment1_20190501_allframes_16.tif,Fmp,Y5_ALon,1,22.9784,3.3046,5.4453, m1
-experiment1,2019-05-01,2019-05-01,allframes,16,data\experiment1_20190501_allframes_16.tif,Fmp,Y5_ALon,2,22.7292,4.0936,5.9413, m1
-experiment1,2019-05-01,2019-05-01,allframes,16,data\experiment1_20190501_allframes_16.tif,Fmp,Y5_ALon,3,21.3288,1.2367,3.6944, WT
+experiment1,2019-05-01,2019-05-01,allframes,1,example_data/experiment1_20190501_allframes_1.tif,Fo,FvFm,0,12.7574,0.7767,0.0290, WT
+experiment1,2019-05-01,2019-05-01,allframes,1,example_data/experiment1_20190501_allframes_1.tif,Fo,FvFm,1,29.0332,0.5476,0.1350,kead1
+experiment1,2019-05-01,2019-05-01,allframes,1,example_data/experiment1_20190501_allframes_1.tif,Fo,FvFm,2,35.7438,0.4564,0.1575,gun1
+experiment1,2019-05-01,2019-05-01,allframes,1,example_data/experiment1_20190501_allframes_1.tif,Fo,FvFm,3,12.9887,0.7683,0.0315,triple
+experiment1,2019-05-01,2019-05-01,allframes,2,example_data/experiment1_20190501_allframes_2.tif,Fm,FvFm,0,57.0742,0.7767,0.0290, WT
+experiment1,2019-05-01,2019-05-01,allframes,2,example_data/experiment1_20190501_allframes_2.tif,Fm,FvFm,1,63.9596,0.5476,0.1350,kead1
+experiment1,2019-05-01,2019-05-01,allframes,2,example_data/experiment1_20190501_allframes_2.tif,Fm,FvFm,2,63.9634,0.4564,0.1575,gun1
+experiment1,2019-05-01,2019-05-01,allframes,2,example_data/experiment1_20190501_allframes_2.tif,Fm,FvFm,3,55.8562,0.7683,0.0315,triple
+experiment1,2019-05-01,2019-05-01,allframes,7,example_data/experiment1_20190501_allframes_7.tif,Fp,Y1_ALon,0,55.7731,3.6472,2.2867, WT
+experiment1,2019-05-01,2019-05-01,allframes,7,example_data/experiment1_20190501_allframes_7.tif,Fp,Y1_ALon,1,64.1226,3.7904,1.7791,kead1
+experiment1,2019-05-01,2019-05-01,allframes,7,example_data/experiment1_20190501_allframes_7.tif,Fp,Y1_ALon,2,64.7938,3.5484,1.9996,gun1
+experiment1,2019-05-01,2019-05-01,allframes,7,example_data/experiment1_20190501_allframes_7.tif,Fp,Y1_ALon,3,54.3884,3.5646,2.4490,triple
+experiment1,2019-05-01,2019-05-01,allframes,8,example_data/experiment1_20190501_allframes_8.tif,Fmp,Y1_ALon,0,53.6164,3.6472,2.2867, WT
+experiment1,2019-05-01,2019-05-01,allframes,8,example_data/experiment1_20190501_allframes_8.tif,Fmp,Y1_ALon,1,60.6524,3.7904,1.7791,kead1
+experiment1,2019-05-01,2019-05-01,allframes,8,example_data/experiment1_20190501_allframes_8.tif,Fmp,Y1_ALon,2,61.3472,3.5484,1.9996,gun1
+experiment1,2019-05-01,2019-05-01,allframes,8,example_data/experiment1_20190501_allframes_8.tif,Fmp,Y1_ALon,3,52.4899,3.5646,2.4490,triple
+experiment1,2019-05-01,2019-05-01,allframes,9,example_data/experiment1_20190501_allframes_9.tif,Fp,Y2_ALon,0,34.2766,3.2093,3.9308, WT
+experiment1,2019-05-01,2019-05-01,allframes,9,example_data/experiment1_20190501_allframes_9.tif,Fp,Y2_ALon,1,29.9371,5.1380,4.7413,kead1
+experiment1,2019-05-01,2019-05-01,allframes,9,example_data/experiment1_20190501_allframes_9.tif,Fp,Y2_ALon,2,28.7096,5.7608,5.1112,gun1
+experiment1,2019-05-01,2019-05-01,allframes,9,example_data/experiment1_20190501_allframes_9.tif,Fp,Y2_ALon,3,33.2836,2.7587,3.9715,triple
+experiment1,2019-05-01,2019-05-01,allframes,10,example_data/experiment1_20190501_allframes_10.tif,Fmp,Y2_ALon,0,34.2149,3.2093,3.9308, WT
+experiment1,2019-05-01,2019-05-01,allframes,10,example_data/experiment1_20190501_allframes_10.tif,Fmp,Y2_ALon,1,29.1036,5.1380,4.7413,kead1
+experiment1,2019-05-01,2019-05-01,allframes,10,example_data/experiment1_20190501_allframes_10.tif,Fmp,Y2_ALon,2,27.7991,5.7608,5.1112,gun1
+experiment1,2019-05-01,2019-05-01,allframes,10,example_data/experiment1_20190501_allframes_10.tif,Fmp,Y2_ALon,3,33.6991,2.7587,3.9715,triple
+experiment1,2019-05-01,2019-05-01,allframes,11,example_data/experiment1_20190501_allframes_11.tif,Fp,Y3_ALon,0,23.3396,2.1678,4.4107, WT
+experiment1,2019-05-01,2019-05-01,allframes,11,example_data/experiment1_20190501_allframes_11.tif,Fp,Y3_ALon,1,24.8513,4.5655,5.5363,kead1
+experiment1,2019-05-01,2019-05-01,allframes,11,example_data/experiment1_20190501_allframes_11.tif,Fp,Y3_ALon,2,24.6667,5.8590,5.9215,gun1
+experiment1,2019-05-01,2019-05-01,allframes,11,example_data/experiment1_20190501_allframes_11.tif,Fp,Y3_ALon,3,23.2469,2.2764,4.5237,triple
+experiment1,2019-05-01,2019-05-01,allframes,12,example_data/experiment1_20190501_allframes_12.tif,Fmp,Y3_ALon,0,24.6768,2.1678,4.4107, WT
+experiment1,2019-05-01,2019-05-01,allframes,12,example_data/experiment1_20190501_allframes_12.tif,Fmp,Y3_ALon,1,24.7911,4.5655,5.5363,kead1
+experiment1,2019-05-01,2019-05-01,allframes,12,example_data/experiment1_20190501_allframes_12.tif,Fmp,Y3_ALon,2,24.1176,5.8590,5.9215,gun1
+experiment1,2019-05-01,2019-05-01,allframes,12,example_data/experiment1_20190501_allframes_12.tif,Fmp,Y3_ALon,3,24.6425,2.2764,4.5237,triple
+experiment1,2019-05-01,2019-05-01,allframes,13,example_data/experiment1_20190501_allframes_13.tif,Fp,Y4_ALon,0,19.9612,1.6402,4.1784, WT
+experiment1,2019-05-01,2019-05-01,allframes,13,example_data/experiment1_20190501_allframes_13.tif,Fp,Y4_ALon,1,22.9819,4.0480,5.6685,kead1
+experiment1,2019-05-01,2019-05-01,allframes,13,example_data/experiment1_20190501_allframes_13.tif,Fp,Y4_ALon,2,23.3233,4.9176,6.0438,gun1
+experiment1,2019-05-01,2019-05-01,allframes,13,example_data/experiment1_20190501_allframes_13.tif,Fp,Y4_ALon,3,20.2739,1.9555,4.5106,triple
+experiment1,2019-05-01,2019-05-01,allframes,14,example_data/experiment1_20190501_allframes_14.tif,Fmp,Y4_ALon,0,21.9146,1.6402,4.1784, WT
+experiment1,2019-05-01,2019-05-01,allframes,14,example_data/experiment1_20190501_allframes_14.tif,Fmp,Y4_ALon,1,23.3828,4.0480,5.6685,kead1
+experiment1,2019-05-01,2019-05-01,allframes,14,example_data/experiment1_20190501_allframes_14.tif,Fmp,Y4_ALon,2,23.4683,4.9176,6.0438,gun1
+experiment1,2019-05-01,2019-05-01,allframes,14,example_data/experiment1_20190501_allframes_14.tif,Fmp,Y4_ALon,3,22.1265,1.9555,4.5106,triple
+experiment1,2019-05-01,2019-05-01,allframes,15,example_data/experiment1_20190501_allframes_15.tif,Fp,Y5_ALon,0,18.4943,1.0798,3.4495, WT
+experiment1,2019-05-01,2019-05-01,allframes,15,example_data/experiment1_20190501_allframes_15.tif,Fp,Y5_ALon,1,21.9804,3.3046,5.4453,kead1
+experiment1,2019-05-01,2019-05-01,allframes,15,example_data/experiment1_20190501_allframes_15.tif,Fp,Y5_ALon,2,22.0985,4.0936,5.9413,gun1
+experiment1,2019-05-01,2019-05-01,allframes,15,example_data/experiment1_20190501_allframes_15.tif,Fp,Y5_ALon,3,18.8043,1.2367,3.6944,triple
+experiment1,2019-05-01,2019-05-01,allframes,16,example_data/experiment1_20190501_allframes_16.tif,Fmp,Y5_ALon,0,21.1527,1.0798,3.4495, WT
+experiment1,2019-05-01,2019-05-01,allframes,16,example_data/experiment1_20190501_allframes_16.tif,Fmp,Y5_ALon,1,22.9784,3.3046,5.4453,kead1
+experiment1,2019-05-01,2019-05-01,allframes,16,example_data/experiment1_20190501_allframes_16.tif,Fmp,Y5_ALon,2,22.7292,4.0936,5.9413,gun1
+experiment1,2019-05-01,2019-05-01,allframes,16,example_data/experiment1_20190501_allframes_16.tif,Fmp,Y5_ALon,3,21.3288,1.2367,3.6944,triple

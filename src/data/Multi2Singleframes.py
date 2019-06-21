@@ -17,7 +17,7 @@ def extract_frames(infile,outdir):
     im = Image.open(infile)
     index = 1
     for frame in ImageSequence.Iterator(im):
-        frame.save(os.path.join(outdir,"%s_%d.tif" % (bn,index)))
+        frame.save(os.path.join(outdir,"%s-%d.tif" % (bn,index)))
         index += 1
 
 if __name__ == "__main__":

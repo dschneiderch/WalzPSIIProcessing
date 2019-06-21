@@ -6,38 +6,38 @@ from datetime import datetime, timedelta
 import pandas as pd
 from src.data import Multi2Singleframes
 
-
 def import_snapshots(snapshotdir, camera='vis'):
     '''
     Input:
     snapshotdir = directory of .tif files
     camera = the camera which captured the images. 'vis' or 'psii'
 
-    Export .tif into snapshotdir from LemnaBase using format {0}-{3}-{1}-{6}
+    Export multiframe .tif into snapshotdir using format {0}-{yyyymmdd}-{2}.tif
     '''
 
     # %% Get metadata from .tifs
     # snapshotdir = 'data/raw_snapshots/psII'
-
+    framedir = os.path.join(snapshotdir, 'pimframes')
+    os.makedirs(framedir, exist_ok=True)
     # first find the multiframe .tif exports from the pim files
     fns = [fn for fn in glob.glob(pathname=os.path.join(snapshotdir,'raw_multiframe','*.tif'))]
     for fn in fns:
-        Multi2Singleframes.extract_frames(fn,'data')
+        Multi2Singleframes.extract_frames(fn,framedir)
 
     # now find the individual frame files
     fns = []
-    for fname in os.listdir(snapshotdir):
-        if re.search(r"_[0-9]+.tif", fname):
+    for fname in os.listdir(framedir):
+        if re.search(r"-[0-9]+.tif", fname):
             fns.append(fname)
 
     flist = list()
     fn=fns[0]
     for fn in fns:
-        f=re.split('[_\\ ]', os.path.splitext(os.path.basename(fn))[0])
-        f.append(os.path.join(snapshotdir,fn))
+        f=re.split('[-]', os.path.splitext(os.path.basename(fn))[0])
+        f.append(os.path.join(framedir,fn))
         flist.append(f)
 
-    fdf=pd.DataFrame(flist,columns=['exp','date','anotherdescriptor','imageid','filename'])
+    fdf=pd.DataFrame(flist,columns=['exp','date','metadata1','imageid','filename'])
 
     # convert date and time columns to datetime format
     fdf['date'] = pd.to_datetime(fdf.loc[:,'date'])
