@@ -15,9 +15,9 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 import matplotlib.font_manager as fm
 
 # %% io directories
-indir = os.path.join('data')
-outdir = os.path.join('output', 'psII')
-debugdir = os.path.join('debug', 'psII')
+indir = os.path.join('detar_data')
+outdir = os.path.join('output', 'from_' + indir)
+debugdir = os.path.join('debug', 'from_' + indir)
 maskdir = os.path.join(outdir, 'masks')
 fluordir = os.path.join(outdir, 'fluorescence')
 os.makedirs(outdir, exist_ok=True)
@@ -33,7 +33,7 @@ pixelresolution = 0.2
 from src.data import import_snapshots
 importlib.reload(import_snapshots)
 fdf = import_snapshots.import_snapshots(indir, 'psii')
-fdf
+
 # %% Define the frames from the PSII measurements
 pimframes = pd.read_csv(os.path.join(indir,'pimframes_map.csv'), skipinitialspace=True)
 fdf_dark = (pd.merge(fdf.reset_index(),
@@ -50,7 +50,6 @@ df = (fdf_dark
 # %% remove the duplicate Fm and Fo frames where frame = Fmp and Fp from imageid 5,6
 df = df.query(
     '(parameter!="FvFm") or (parameter=="FvFm" and (frame=="Fo" or frame=="Fm") )')
-
 
 # %% Import function to make mask and setup image classifications
 from src.segmentation import createmasks
