@@ -11,11 +11,10 @@ import numpy as np
 from datetime import datetime, timedelta
 import importlib
 from matplotlib import pyplot as plt
-from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
-import matplotlib.font_manager as fm
-
+from src.util import masked_stats
+from src.viz import add_scalebar
 # %% io directories
-indir = os.path.join('fluclight_data')
+indir = os.path.join('example_data')
 outdir = os.path.join('output', 'from_' + indir)
 debugdir = os.path.join('debug', 'from_' + indir)
 maskdir = os.path.join(outdir, 'masks')
@@ -59,9 +58,10 @@ from src.viz import custom_colormaps
 # %% image fucntion
 
 def image_avg(fundf):
+    global c, h, roi_c, roi_h
 
-    fn_max = fundf.filename.iloc[1]
     fn_min = fundf.filename.iloc[0]
+    fn_max = fundf.filename.iloc[1]
     param_name = fundf['parameter'].iloc[0]
 
     outfn = os.path.splitext(os.path.basename(fn_max))[0]
@@ -70,7 +70,10 @@ def image_avg(fundf):
     outfn_split[-1] = param_name
     outfn = "-".join(outfn_split)
     print(outfn)
+
     sampleid = outfn_split[0]
+    fmaxdir = os.path.join(fluordir, sampleid)
+    os.makedirs(fmaxdir, exist_ok=True)
 
     if pcv.params.debug == 'print':
         debug_outdir = os.path.join(debugdir, outfn)
@@ -82,21 +85,42 @@ def image_avg(fundf):
     # read image as is. only gray values in PSII images
     imgmin, _, _ = pcv.readimage(fn_min)
     img, _, _ = pcv.readimage(fn_max)
+    fdark = np.zeros_like(img)
 
-    # importlib.reload(createmasks)
     if param_name == 'FvFm':
+        # create mask 
         mask = createmasks.psIImask(img)
-        pcv.print_image(mask, os.path.join(maskdir, outfn + '_mask.png'))
+
+        # find objects and setup roi
+        c, h = pcv.find_objects(img, mask)
+        roi_c, roi_h = pcv.roi.multi(img, coord=(240, 180), radius=30, spacing=(150, 150), ncols=2, nrows=2)
+
+        #setup individual roi plant masks
+        newmask = np.zeros(np.shape(mask), dtype='uint8')
+
+        # compute fvfm
+        Fv, hist_fvfm = pcv.fluor_fvfm(fdark = fdark, fmin = imgmin, fmax=img, mask=mask, bins=128)
+        YII = np.divide(Fv, img, where = mask > 0)
+        NPQ = np.divide(img, img, where = mask > 0) - 1
+
+        # print_image doesn't print masked arrays
+        cv2.imwrite(os.path.join(fmaxdir, outfn + '_fvfm.tif'), YII)
+        cv2.imwrite(os.path.join(fmaxdir, outfn + '_fmax.tif'), img)
+        # NPQ will always be an array of 0s
+
     else:
         #use cv2 to read image becase pcv.readimage will save as input_image.png overwriting img
-        mask = cv2.imread(os.path.join(maskdir, basefn + '-FvFm_mask.png'), -1)
+        newmask = cv2.imread(os.path.join(maskdir, basefn + '-FvFm_mask.png'), -1)
 
-    #setup individual roi plant masks
-    newmask = np.zeros(np.shape(mask), dtype='uint8')
+        # compute YII
+        Fvp, hist_yii = pcv.fluor_fvfm(fdark, fmin = imgmin, fmax = img, mask = newmask, bins = 128)
+        YII = np.divide(Fvp, img, where = np.logical_and(newmask > 0, img > 0))
+        cv2.imwrite(os.path.join(fmaxdir, outfn + '_yii.tif'), YII)
 
-    # find objects and setup roi
-    c, h = pcv.find_objects(img, mask)
-    roi_c, roi_h = pcv.roi.multi(img, coord=(150, 90), radius=30, spacing=(175, 160), ncols=3, nrows=3)
+        # compute NPQ
+        Fm = cv2.imread(os.path.join(fmaxdir, basefn + '-FvFm_fmax.tif'), -1)
+        NPQ = np.subtract(np.divide(Fm, img, where = np.logical_and(newmask > 0, img > 0)),1, where = newmask > 0)
+        cv2.imwrite(os.path.join(fmaxdir, outfn + '_npq.tif'), NPQ)
 
     # Make as many copies of incoming dataframe as there are ROIs
     outdf = fundf.copy()
@@ -110,10 +134,11 @@ def image_avg(fundf):
     yii_std = []
     npq_avg = []
     npq_std = []
+    plantarea = []
     ithroi = []
     inbounds = []
     i = 0
-    rc = roi_c[i]
+    rh = roi_h[i]
     for i, rc in enumerate(roi_c):
         # Store iteration Number
         ithroi.append(int(i))
@@ -138,6 +163,8 @@ def image_avg(fundf):
             npq_std.append(np.nan)
             inbounds.append(np.nan)
             inbounds.append(np.nan)
+            plantarea.append(np.nan)
+            plantarea.append(np.nan)
 
         else:
 
@@ -145,130 +172,96 @@ def image_avg(fundf):
             plant_contour, plant_mask = pcv.object_composition(img=img, contours=roi_obj, hierarchy=hierarchy_obj)
 
             #combine plant masks after roi filter
-            newmask = pcv.image_add(newmask, plant_mask)
-
-            imgmax_masked = np.ma.array(img, mask=~plant_mask.astype('bool')).astype('int8')
-            imgmin_masked = np.ma.array(imgmin, mask=~plant_mask.astype('bool')).astype('int8')
-
-            fmaxdir = os.path.join(fluordir, sampleid, 'roi'+str(i))
-            os.makedirs(fmaxdir, exist_ok=True)
             if param_name == 'FvFm':
-                Fv = (imgmax_masked - imgmin_masked)
-                Fv[np.where(imgmax_masked < imgmin_masked)] = 0
-                YII = np.divide(Fv, imgmax_masked, where = imgmax_masked != 0)
-                Fmax = imgmax_masked   
-                Fmax[np.where(Fv == 0)] = 0 
-                NPQ = np.array(0)
-                # print_image doesn't print masked arrays
-                cv2.imwrite(os.path.join(fmaxdir, outfn + '_roi' + str(i) + '_fvfm.tif'), np.float32(YII))
-                cv2.imwrite(os.path.join(fmaxdir, outfn + '_roi' + str(i) + '_fmax.tif'), Fmax)
+                newmask = pcv.image_add(newmask, plant_mask)
+
+            frame_avg.append(masked_stats.mean(imgmin, plant_mask))
+            frame_avg.append(masked_stats.mean(img, plant_mask))
+            # need double because there are two images per loop
+            yii_avg.append(masked_stats.mean(YII, plant_mask))
+            yii_avg.append(masked_stats.mean(YII, plant_mask))
+            yii_std.append(masked_stats.std(YII, plant_mask))
+            yii_std.append(masked_stats.std(YII, plant_mask))
+            npq_avg.append(masked_stats.mean(NPQ, plant_mask))
+            npq_avg.append(masked_stats.mean(NPQ, plant_mask))
+            npq_std.append(masked_stats.std(NPQ, plant_mask))
+            npq_std.append(masked_stats.std(NPQ, plant_mask))
+            inbounds.append(pcv.within_frame(plant_mask))
+            inbounds.append(pcv.within_frame(plant_mask))
+            plantarea.append(obj_area * pixelresolution**2.)
+            plantarea.append(obj_area * pixelresolution**2.)
+
+            # with open(os.path.join(outdir, outfn + '_roi' + str(i) + '.txt'), 'w') as f:
+            #     for item in yii_avg:
+            #         f.write("%s\n" % item)
+
+            #setup pseudocolor image size
+            hgt, wdth = np.shape(newmask)
+            if len(roi_c) == 2:
+                if i == 0:
+                    p1 = (int(0), int(0))
+                    p2 = (int(hgt), int(hgt))
+                elif i == 1:
+                    p1 = (int(wdth-hgt), int(0))
+                    p2 = (int(wdth), int(hgt))
+            elif len(roi_c) == 1:
+                cutwidth = (wdth-hgt)/2
+                p1 = (int(cutwidth), int(0))
+                p2 = (int(cutwidth+hgt), int(hgt))
             else:
-                Fvp = imgmax_masked - imgmin_masked
-                Fvp[np.where(imgmax_masked < imgmin_masked)] = 0
-                YII = np.divide(Fvp, imgmax_masked)
-                Fm = cv2.imread(os.path.join(fmaxdir, basefn + '-FvFm_roi' + str(i) + '_fmax.tif'), -1)
-                NPQ = np.divide(Fm, imgmax_masked) - 1
-                cv2.imwrite(os.path.join(fmaxdir, outfn + '_roi' + str(i) + '_yii.tif'), np.float32(YII))
-                cv2.imwrite(os.path.join(fmaxdir, outfn + '_roi' + str(i) + '_npq.tif'), np.float32(NPQ))
-
-            frame_avg.append(imgmin_masked.mean())
-            frame_avg.append(imgmax_masked.mean())
-            # need double because there are two images
-            yii_avg.append(YII.mean())
-            yii_avg.append(YII.mean())
-            yii_std.append(YII.std())
-            yii_std.append(YII.std())
-            # need double because there are two images
-            npq_avg.append(NPQ.mean())
-            npq_avg.append(NPQ.mean())
-            npq_std.append(NPQ.std())
-            npq_std.append(NPQ.std())
-            inbounds.append(pcv.within_frame(plant_mask))
-            inbounds.append(pcv.within_frame(plant_mask))
-
-            with open(os.path.join(outdir, outfn + '_roi' + str(i) + '.txt'), 'w') as f:
-                for item in yii_avg:
-                    f.write("%s\n" % item)
-
-            # #setup pseudocolor image size
-            # hgt, wdth = np.shape(mask)
-            # if len(roi_c) == 2:
-            #     if i == 0:
-            #         p1 = (int(0), int(0))
-            #         p2 = (int(hgt), int(hgt))
-            #     elif i == 1:
-            #         p1 = (int(wdth-hgt), int(0))
-            #         p2 = (int(wdth), int(hgt))
-            # elif len(roi_c) == 1:
-            #     cutwidth = (wdth-hgt)/2
-            #     p1 = (int(cutwidth), int(0))
-            #     p2 = (int(cutwidth+hgt), int(hgt))
-            # else:
-            #     figframe = None
+                figframe = None
                 
-            # if figframe is not None:
-            #     _, _, figframe, _ = pcv.rectangle_mask(plant_mask, p1, p2, color='white')
-            #     figframe = figframe[0]
+            if figframe is not None:
+                _, _, figframe, _ = pcv.rectangle_mask(plant_mask, p1, p2, color='white')
+                figframe = figframe[0]
 
-            # # print pseduocolor
-            # if param_name == 'FvFm':
-            #     imgdir = os.path.join(
-            #         outdir, 'pseudocolor_images', sampleid, 'roi'+str(i), 'fvfm')
-            #     os.makedirs(imgdir, exist_ok=True)
-            # else:
-            #     imgdir = os.path.join(
-            #         outdir, 'pseudocolor_images', sampleid, 'roi'+str(i), 'IndC')
-            #     os.makedirs(imgdir, exist_ok=True)
-            #     npq_img = pcv.visualize.pseudocolor(
-            #         NPQ, obj=figframe, mask=plant_mask, cmap='inferno', axes=False, min_value=0, max_value=2.5, background='black', obj_padding=0)
-            #     fontprops = fm.FontProperties(size=18, weight='bold')
-            #     ax = npq_img.gca()
-            #     barwidth = 20  # mm
-            #     scalebar = AnchoredSizeBar(ax.transData,
-            #                                barwidth/pixelresolution,  '2 cm', 'lower center',
-            #                                pad=0.5,
-            #                                sep=5,
-            #                                color='white',
-            #                                frameon=False,
-            #                                size_vertical=barwidth/pixelresolution/30,
-            #                                fontproperties=fontprops)
+            # print pseduocolor
+            imgdir = os.path.join(outdir, 'pseudocolor_images', sampleid, 'roi'+str(i))
+            if param_name == 'FvFm':
+                imgdir = os.path.join(imgdir, 'fvfm')
+                os.makedirs(imgdir, exist_ok=True)
+            else:
+                imgdir = os.path.join(imgdir, 'IndC')
+                os.makedirs(imgdir, exist_ok=True)
+                npq_img = pcv.visualize.pseudocolor(NPQ, obj=figframe, mask=plant_mask, cmap='inferno', axes=False, min_value=0, max_value=2.5, background='black', obj_padding=0)
+                npq_img = add_scalebar.add_scalebar(npq_img, barwidth=20, pixelresolution=0.2)
+                npq_img.savefig(os.path.join(imgdir, outfn + '_roi' + str(i) + '_NPQ.png'), bbox_inches='tight')
+                npq_img.clf()
 
-            #     ax.add_artist(scalebar)
+            yii_img = pcv.visualize.pseudocolor(YII, obj=figframe, mask=plant_mask, cmap=custom_colormaps.get_cmap('imagingwin'), axes=False, min_value=0, max_value=1, background='black', obj_padding=0)
+            yii_img = add_scalebar.add_scalebar(yii_img, barwidth = 20, pixelresolution = 0.2)
+            yii_img.savefig(os.path.join(imgdir, outfn + '_roi' + str(i) + '_YII.png'), bbox_inches='tight')
+            yii_img.clf()
+        # end len(roi) > 0
+    
+    # end roi loop
 
-            #     npq_img.savefig(os.path.join(
-            #         imgdir, outfn + '_roi' + str(i) + '_NPQ.png'), bbox_inches='tight')
-            #     npq_img.clf()
+    # save mask of all plants to file after roi filter
+    if param_name == 'FvFm':
+        pcv.print_image(newmask, os.path.join(maskdir, outfn + '_mask.png'))
 
-            # yii_img = pcv.visualize.pseudocolor(YII, obj=figframe, mask=plant_mask, cmap=custom_colormaps.get_cmap(
-            #     'imagingwin'), axes=False, min_value=0, max_value=1, background='black', obj_padding=0)
-            # fontprops = fm.FontProperties(size=18, weight='bold')
-            # ax = yii_img.gca()
-            # barwidth = 20  # mm
-            # scalebar = AnchoredSizeBar(ax.transData,
-            #                            barwidth/pixelresolution,  '2 cm', 'lower center',
-            #                            pad=0.5,
-            #                            sep=5,
-            #                            color='white',
-            #                            frameon=False,
-            #                            size_vertical=barwidth/pixelresolution/30,
-            #                            fontproperties=fontprops)
+    # save pseudocolor of all plants in image
+    npq_img = pcv.visualize.pseudocolor(NPQ, obj=None, mask=newmask, cmap='inferno', axes=False, min_value=0, max_value=2.5, background='black', obj_padding=0)
+    npq_img = add_scalebar.add_scalebar(npq_img, barwidth=20, pixelresolution=0.2)
+    npq_img.savefig(os.path.join(imgdir, outfn + '_NPQ.png'), bbox_inches='tight')
+    npq_img.clf()
 
-            # ax.add_artist(scalebar)
+    yii_img = pcv.visualize.pseudocolor(YII, obj=None, mask=newmask, cmap=custom_colormaps.get_cmap('imagingwin'), axes=False, min_value=0, max_value=1, background='black', obj_padding=0)
+    yii_img = add_scalebar.add_scalebar(yii_img, barwidth = 20, pixelresolution = 0.2)
+    yii_img.savefig(os.path.join(imgdir, outfn + '_YII.png'), bbox_inches='tight')
+    yii_img.clf()
 
-            # yii_img.savefig(os.path.join(imgdir, outfn + '_roi' +
-            #                              str(i) + '_YII.png'), bbox_inches='tight')
-            # yii_img.clf()
-
-           
-
+    # check yii values for uniqueness       
     isunique = yii_avg.count(yii_avg[0]) != len(yii_avg)
 
+    # save all values to outgoing dataframe
     outdf['roi'] = ithroi
     outdf['frame_avg'] = frame_avg
     outdf['yii_avg'] = yii_avg
     outdf['npq_avg'] = npq_avg
     outdf['yii_std'] = yii_std
     outdf['npq_std'] = npq_std
+    outdf['plantarea'] = plantarea 
     outdf['obj_in_frame'] = inbounds
     outdf['unique_roi'] = isunique
 
@@ -277,7 +270,7 @@ def image_avg(fundf):
 
 # %% Setup output
 pcv.params.debug = 'plot'
-importlib.reload(createmasks)
+# importlib.reload(createmasks)
 if pcv.params.debug == 'print':
     import shutil
     shutil.rmtree(os.path.join(debugdir), ignore_errors=True)
@@ -287,13 +280,12 @@ if pcv.params.debug == 'print':
 df = df.sort_values(['exp','metadata1', 'imageid'])
 # this only works if every category is represented in the first day in the dataframe
 param_order = df.parameter.unique()
-df['parameter'] = pd.Categorical(
-    df.parameter, categories=param_order, ordered=True)
+df['parameter'] = pd.Categorical(df.parameter, categories=param_order, ordered=True)
 
 # # start testing
-# df2 = df.query('(exp == "fluc")')
+df2 = df.query('(exp == "experiment1")')
 # del df2
-# fundf=df2.iloc[[4,5]]
+fundf=df2.iloc[[4,5]]
 # del fundf
 # # # fundf
 # # end testing
