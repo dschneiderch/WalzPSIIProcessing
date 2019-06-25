@@ -25,7 +25,7 @@ def psIImask(img, mode='thresh'):
         # mask = pcv.dilate(threshy, 2, 1)
         mask = pcv.fill(threshy, 250)
         mask = pcv.erode(mask, 2, 1)
-        mask = pcv.fill(mask, 250)
+        mask = pcv.fill(mask, 100)
         final_mask = mask  # pcv.fill(mask, 270)
 
     elif isinstance(mode, pd.DataFrame):
