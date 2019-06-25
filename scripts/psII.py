@@ -15,7 +15,7 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 import matplotlib.font_manager as fm
 
 # %% io directories
-indir = os.path.join('detar_data')
+indir = os.path.join('fluclight_data')
 outdir = os.path.join('output', 'from_' + indir)
 debugdir = os.path.join('debug', 'from_' + indir)
 maskdir = os.path.join(outdir, 'masks')
@@ -31,7 +31,7 @@ pixelresolution = 0.2
 
 # %% Import tif files
 from src.data import import_snapshots
-importlib.reload(import_snapshots)
+# importlib.reload(import_snapshots)
 fdf = import_snapshots.import_snapshots(indir, 'psii')
 
 # %% Define the frames from the PSII measurements
@@ -53,7 +53,7 @@ df = df.query(
 
 # %% Import function to make mask and setup image classifications
 from src.segmentation import createmasks
-#importlib.reload(createmasks)  #you can use this to reload the module when you're iterating
+# importlib.reload(createmasks)  #you can use this to reload the module when you're iterating
 from src.viz import custom_colormaps
 #importlib.reload(custom_colormaps)
 # %% image fucntion
@@ -96,7 +96,7 @@ def image_avg(fundf):
 
     # find objects and setup roi
     c, h = pcv.find_objects(img, mask)
-    roi_c, roi_h = pcv.roi.multi(img, coord=(300, 150), radius=70, spacing=(150, 150), ncols=2, nrows=2)
+    roi_c, roi_h = pcv.roi.multi(img, coord=(150, 90), radius=30, spacing=(175, 160), ncols=3, nrows=3)
 
     # Make as many copies of incoming dataframe as there are ROIs
     outdf = fundf.copy()
@@ -112,7 +112,7 @@ def image_avg(fundf):
     npq_std = []
     ithroi = []
     inbounds = []
-    i = 1
+    i = 0
     rc = roi_c[i]
     for i, rc in enumerate(roi_c):
         # Store iteration Number
@@ -122,8 +122,7 @@ def image_avg(fundf):
         rh = roi_h[i]
 
         # Filter objects based on being in the ROI
-        roi_obj, hierarchy_obj, submask, obj_area = pcv.roi_objects(
-            img, roi_contour=rc, roi_hierarchy=rh, object_contour=c, obj_hierarchy=h, roi_type='partial')
+        roi_obj, hierarchy_obj, submask, obj_area = pcv.roi_objects(img, roi_contour=rc, roi_hierarchy=rh, object_contour=c, obj_hierarchy=h, roi_type='partial')
 
         if len(roi_obj) == 0:
 
@@ -143,39 +142,34 @@ def image_avg(fundf):
         else:
 
             # Combine multiple plant objects within an roi together
-            plant_contour, plant_mask = pcv.object_composition(
-                img=img.copy(), contours=roi_obj, hierarchy=hierarchy_obj)
+            plant_contour, plant_mask = pcv.object_composition(img=img, contours=roi_obj, hierarchy=hierarchy_obj)
 
             #combine plant masks after roi filter
             newmask = pcv.image_add(newmask, plant_mask)
 
-            imgmax_masked = np.ma.array(img, mask=~plant_mask.astype('bool'))
-            imgmin_masked = np.ma.array(
-                imgmin, mask=~plant_mask.astype('bool'))
+            imgmax_masked = np.ma.array(img, mask=~plant_mask.astype('bool')).astype('int8')
+            imgmin_masked = np.ma.array(imgmin, mask=~plant_mask.astype('bool')).astype('int8')
 
             fmaxdir = os.path.join(fluordir, sampleid, 'roi'+str(i))
             os.makedirs(fmaxdir, exist_ok=True)
             if param_name == 'FvFm':
                 Fv = (imgmax_masked - imgmin_masked)
-                YII = np.divide(Fv, imgmax_masked, where=imgmax_masked != 0)
-                Fmax = imgmax_masked
+                Fv[np.where(imgmax_masked < imgmin_masked)] = 0
+                YII = np.divide(Fv, imgmax_masked, where = imgmax_masked != 0)
+                Fmax = imgmax_masked   
+                Fmax[np.where(Fv == 0)] = 0 
                 NPQ = np.array(0)
                 # print_image doesn't print masked arrays
-                cv2.imwrite(os.path.join(fmaxdir, outfn + '_roi' +
-                                         str(i) + '_fvfm.tif'), np.float32(YII))
-                cv2.imwrite(os.path.join(fmaxdir, outfn +
-                                         '_roi' + str(i) + '_fmax.tif'), Fmax)
+                cv2.imwrite(os.path.join(fmaxdir, outfn + '_roi' + str(i) + '_fvfm.tif'), np.float32(YII))
+                cv2.imwrite(os.path.join(fmaxdir, outfn + '_roi' + str(i) + '_fmax.tif'), Fmax)
             else:
-                Fvp = (imgmax_masked - imgmin_masked)
-                YII = np.divide(Fvp, imgmax_masked, where=imgmax_masked != 0)
-                Fmax = cv2.imread(os.path.join(
-                    fmaxdir, basefn + '-FvFm_roi' + str(i) + '_fmax.tif'), -1)
-                NPQ = np.divide(Fmax, imgmax_masked,
-                                where=imgmax_masked != 0) - 1
-                cv2.imwrite(os.path.join(fmaxdir, outfn + '_roi' +
-                                         str(i) + '_yii.tif'), np.float32(YII))
-                cv2.imwrite(os.path.join(fmaxdir, outfn + '_roi' +
-                                         str(i) + '_npq.tif'), np.float32(NPQ))
+                Fvp = imgmax_masked - imgmin_masked
+                Fvp[np.where(imgmax_masked < imgmin_masked)] = 0
+                YII = np.divide(Fvp, imgmax_masked)
+                Fm = cv2.imread(os.path.join(fmaxdir, basefn + '-FvFm_roi' + str(i) + '_fmax.tif'), -1)
+                NPQ = np.divide(Fm, imgmax_masked) - 1
+                cv2.imwrite(os.path.join(fmaxdir, outfn + '_roi' + str(i) + '_yii.tif'), np.float32(YII))
+                cv2.imwrite(os.path.join(fmaxdir, outfn + '_roi' + str(i) + '_npq.tif'), np.float32(NPQ))
 
             frame_avg.append(imgmin_masked.mean())
             frame_avg.append(imgmax_masked.mean())
@@ -192,75 +186,80 @@ def image_avg(fundf):
             inbounds.append(pcv.within_frame(plant_mask))
             inbounds.append(pcv.within_frame(plant_mask))
 
-            #setup pseudocolor image size
-            hgt, wdth = np.shape(mask)
-            if len(roi_c) == 2:
-                if i == 0:
-                    p1 = (int(0), int(0))
-                    p2 = (int(hgt), int(hgt))
-                elif i == 1:
-                    p1 = (int(wdth-hgt), int(0))
-                    p2 = (int(wdth), int(hgt))
-            elif len(roi_c) == 1:
-                cutwidth = (wdth-hgt)/2
-                p1 = (int(cutwidth), int(0))
-                p2 = (int(cutwidth+hgt), int(hgt))
-            else:
-                figframe = None
+            with open(os.path.join(outdir, outfn + '_roi' + str(i) + '.txt'), 'w') as f:
+                for item in yii_avg:
+                    f.write("%s\n" % item)
+
+            # #setup pseudocolor image size
+            # hgt, wdth = np.shape(mask)
+            # if len(roi_c) == 2:
+            #     if i == 0:
+            #         p1 = (int(0), int(0))
+            #         p2 = (int(hgt), int(hgt))
+            #     elif i == 1:
+            #         p1 = (int(wdth-hgt), int(0))
+            #         p2 = (int(wdth), int(hgt))
+            # elif len(roi_c) == 1:
+            #     cutwidth = (wdth-hgt)/2
+            #     p1 = (int(cutwidth), int(0))
+            #     p2 = (int(cutwidth+hgt), int(hgt))
+            # else:
+            #     figframe = None
                 
-            if figframe is not None:
-                _, _, figframe, _ = pcv.rectangle_mask(
-                    plant_mask, p1, p2, color='white')
-                figframe = figframe[0]
+            # if figframe is not None:
+            #     _, _, figframe, _ = pcv.rectangle_mask(plant_mask, p1, p2, color='white')
+            #     figframe = figframe[0]
 
-            # print pseduocolor
-            if param_name == 'FvFm':
-                imgdir = os.path.join(
-                    outdir, 'pseudocolor_images', sampleid, 'roi'+str(i), 'fvfm')
-                os.makedirs(imgdir, exist_ok=True)
-            else:
-                imgdir = os.path.join(
-                    outdir, 'pseudocolor_images', sampleid, 'roi'+str(i), 'IndC')
-                os.makedirs(imgdir, exist_ok=True)
-                npq_img = pcv.visualize.pseudocolor(
-                    NPQ, obj=figframe, mask=plant_mask, cmap='inferno', axes=False, min_value=0, max_value=2.5, background='black', obj_padding=0)
-                fontprops = fm.FontProperties(size=18, weight='bold')
-                ax = npq_img.gca()
-                barwidth = 20  # mm
-                scalebar = AnchoredSizeBar(ax.transData,
-                                           barwidth/pixelresolution,  '2 cm', 'lower center',
-                                           pad=0.5,
-                                           sep=5,
-                                           color='white',
-                                           frameon=False,
-                                           size_vertical=barwidth/pixelresolution/30,
-                                           fontproperties=fontprops)
+            # # print pseduocolor
+            # if param_name == 'FvFm':
+            #     imgdir = os.path.join(
+            #         outdir, 'pseudocolor_images', sampleid, 'roi'+str(i), 'fvfm')
+            #     os.makedirs(imgdir, exist_ok=True)
+            # else:
+            #     imgdir = os.path.join(
+            #         outdir, 'pseudocolor_images', sampleid, 'roi'+str(i), 'IndC')
+            #     os.makedirs(imgdir, exist_ok=True)
+            #     npq_img = pcv.visualize.pseudocolor(
+            #         NPQ, obj=figframe, mask=plant_mask, cmap='inferno', axes=False, min_value=0, max_value=2.5, background='black', obj_padding=0)
+            #     fontprops = fm.FontProperties(size=18, weight='bold')
+            #     ax = npq_img.gca()
+            #     barwidth = 20  # mm
+            #     scalebar = AnchoredSizeBar(ax.transData,
+            #                                barwidth/pixelresolution,  '2 cm', 'lower center',
+            #                                pad=0.5,
+            #                                sep=5,
+            #                                color='white',
+            #                                frameon=False,
+            #                                size_vertical=barwidth/pixelresolution/30,
+            #                                fontproperties=fontprops)
 
-                ax.add_artist(scalebar)
+            #     ax.add_artist(scalebar)
 
-                npq_img.savefig(os.path.join(
-                    imgdir, outfn + '_roi' + str(i) + '_NPQ.png'), bbox_inches='tight')
-                npq_img.clf()
+            #     npq_img.savefig(os.path.join(
+            #         imgdir, outfn + '_roi' + str(i) + '_NPQ.png'), bbox_inches='tight')
+            #     npq_img.clf()
 
-            yii_img = pcv.visualize.pseudocolor(YII, obj=figframe, mask=plant_mask, cmap=custom_colormaps.get_cmap(
-                'imagingwin'), axes=False, min_value=0, max_value=1, background='black', obj_padding=0)
-            fontprops = fm.FontProperties(size=18, weight='bold')
-            ax = yii_img.gca()
-            barwidth = 20  # mm
-            scalebar = AnchoredSizeBar(ax.transData,
-                                       barwidth/pixelresolution,  '2 cm', 'lower center',
-                                       pad=0.5,
-                                       sep=5,
-                                       color='white',
-                                       frameon=False,
-                                       size_vertical=barwidth/pixelresolution/30,
-                                       fontproperties=fontprops)
+            # yii_img = pcv.visualize.pseudocolor(YII, obj=figframe, mask=plant_mask, cmap=custom_colormaps.get_cmap(
+            #     'imagingwin'), axes=False, min_value=0, max_value=1, background='black', obj_padding=0)
+            # fontprops = fm.FontProperties(size=18, weight='bold')
+            # ax = yii_img.gca()
+            # barwidth = 20  # mm
+            # scalebar = AnchoredSizeBar(ax.transData,
+            #                            barwidth/pixelresolution,  '2 cm', 'lower center',
+            #                            pad=0.5,
+            #                            sep=5,
+            #                            color='white',
+            #                            frameon=False,
+            #                            size_vertical=barwidth/pixelresolution/30,
+            #                            fontproperties=fontprops)
 
-            ax.add_artist(scalebar)
+            # ax.add_artist(scalebar)
 
-            yii_img.savefig(os.path.join(imgdir, outfn + '_roi' +
-                                         str(i) + '_YII.png'), bbox_inches='tight')
-            yii_img.clf()
+            # yii_img.savefig(os.path.join(imgdir, outfn + '_roi' +
+            #                              str(i) + '_YII.png'), bbox_inches='tight')
+            # yii_img.clf()
+
+           
 
     isunique = yii_avg.count(yii_avg[0]) != len(yii_avg)
 
@@ -277,7 +276,7 @@ def image_avg(fundf):
 
 
 # %% Setup output
-pcv.params.debug = 'print'
+pcv.params.debug = 'plot'
 importlib.reload(createmasks)
 if pcv.params.debug == 'print':
     import shutil
@@ -292,9 +291,9 @@ df['parameter'] = pd.Categorical(
     df.parameter, categories=param_order, ordered=True)
 
 # # start testing
-# df2 = df.query('(exp == "exp1")')
-# df2
-# fundf=df2.iloc[[0,1]]
+# df2 = df.query('(exp == "fluc")')
+# del df2
+# fundf=df2.iloc[[4,5]]
 # del fundf
 # # # fundf
 # # end testing
@@ -307,13 +306,13 @@ if 'df2' not in globals():
 else:
     print('df2 already exists!')
 
-dfgrps = df2.groupby(
-    ['exp', 'jobdate', 'parameter'])
+dfgrps = df2.groupby(['exp', 'jobdate', 'parameter'])
 grplist = []
 for grp, grpdf in dfgrps:
     # print('%s ----' % grpdf.parameter)
     grplist.append(image_avg(grpdf))
 df_avg = pd.concat(grplist)
+
 
 # %% Add genotype information
 gtypeinfo = pd.read_csv(os.path.join(indir,'genotype_map.csv'))

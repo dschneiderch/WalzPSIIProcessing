@@ -22,8 +22,6 @@ __pycache__/
 # Jupyter NB Checkpoints
 .ipynb_checkpoints/
 
-# exclude data from source control by default
-detar_data/
 
 
 # Mac OS-specific storage files
@@ -37,6 +35,9 @@ detar_data/
 dask*/
 .Rproj.user
 
+# exclude data from source control by default
+detar_data/
+fluclight_data/
 
 # debug folder
 debug/
@@ -46,3 +47,6 @@ debug/
 output/*
 !output/from_example_data/
 output/from_example_data/fluorescence
+
+scripts/fluclight*
+scripts/detar*

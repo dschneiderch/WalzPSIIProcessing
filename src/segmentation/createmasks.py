@@ -22,9 +22,10 @@ def psIImask(img, mode='thresh'):
         # this entropy based technique seems to work well when algae is present
         algaethresh = filters.threshold_yen(image=img)
         threshy = pcv.threshold.binary(img, algaethresh, 255, 'light')
-        mask = pcv.dilate(threshy, 2, 1)
-        mask = pcv.fill(mask, 250)
+        # mask = pcv.dilate(threshy, 2, 1)
+        mask = pcv.fill(threshy, 250)
         mask = pcv.erode(mask, 2, 1)
+        mask = pcv.fill(mask, 250)
         final_mask = mask  # pcv.fill(mask, 270)
 
     elif isinstance(mode, pd.DataFrame):
