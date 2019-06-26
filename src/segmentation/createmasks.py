@@ -4,17 +4,6 @@ import numpy as np
 import cv2 as cv2
 from skimage import filters
 
-def vismask(img):
-
-    a_img = pcv.rgb2gray_lab(img,channel='a')
-    thresh_a = pcv.threshold.binary(a_img, 126, 255, 'dark')
-
-    mask = pcv.fill(thresh_a,1000)
-    final_mask = pcv.dilate(mask,2,1)
-
-    return final_mask
-
-
 def psIImask(img, mode='thresh'):
     # pcv.plot_image(img)
     if mode is 'thresh':
@@ -39,7 +28,7 @@ def psIImask(img, mode='thresh'):
         plt.imshow(npq)
         # pcv.plot_image(npq)
 
-        final_mask = np.zeroes(np.shape(img))
+        final_mask = np.zeros_like(img)
 
     else:
         pcv.fatal_error('mode must be "thresh" (default) or an object of class pd.DataFrame')

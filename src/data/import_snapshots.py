@@ -12,7 +12,7 @@ def import_snapshots(snapshotdir, camera='vis'):
     snapshotdir = directory of .tif files
     camera = the camera which captured the images. 'vis' or 'psii'
 
-    Export multiframe .tif into snapshotdir using format {0}-{yyyymmdd}-{2}.tif
+    Export multiframe .tif into snapshotdir using format {treatment}-{yyyymmdd}-{sampleid}.tif
     '''
 
     # %% Get metadata from .tifs
@@ -37,7 +37,7 @@ def import_snapshots(snapshotdir, camera='vis'):
         f.append(os.path.join(framedir,fn))
         flist.append(f)
 
-    fdf=pd.DataFrame(flist,columns=['exp','date','metadata1','imageid','filename'])
+    fdf=pd.DataFrame(flist,columns=['treatment','date','sampleid','imageid','filename'])
 
     # convert date and time columns to datetime format
     fdf['date'] = pd.to_datetime(fdf.loc[:,'date'])
@@ -45,9 +45,9 @@ def import_snapshots(snapshotdir, camera='vis'):
 
     # convert image id from string to integer that can be sorted numerically
     fdf['imageid'] = fdf.imageid.astype('uint8')
-    fdf = fdf.sort_values(['exp','date','imageid'])
+    fdf = fdf.sort_values(['treatment','date','sampleid'])
 
-    fdf = fdf.set_index(['exp','date','jobdate'])
+    fdf = fdf.set_index(['treatment','date','jobdate'])
     # check for duplicate jobs of the same sample on the same day.  if jobs_removed.csv isnt blank then you shyould investigate!
     #dups = fdf.reset_index('datetime',drop=False).set_index(['imageid'],append=True).index.duplicated(keep='first')
     #dups_to_remove = fdf[dups].drop(columns=['imageid','filename']).reset_index().drop_duplicates()

@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 from src.util import masked_stats
 from src.viz import add_scalebar
 # %% io directories
-indir = os.path.join('example_data')
+indir = 'example_data'
 outdir = os.path.join('output', 'from_' + indir)
 debugdir = os.path.join('debug', 'from_' + indir)
 maskdir = os.path.join(outdir, 'masks')
@@ -71,7 +71,7 @@ def image_avg(fundf):
     outfn = "-".join(outfn_split)
     print(outfn)
 
-    sampleid = outfn_split[0]
+    sampleid = outfn_split[2]
     fmaxdir = os.path.join(fluordir, sampleid)
     os.makedirs(fmaxdir, exist_ok=True)
 
@@ -100,13 +100,12 @@ def image_avg(fundf):
 
         # compute fvfm
         Fv, hist_fvfm = pcv.fluor_fvfm(fdark = fdark, fmin = imgmin, fmax=img, mask=mask, bins=128)
-        YII = np.divide(Fv, img, where = mask > 0)
-        NPQ = np.divide(img, img, where = mask > 0) - 1
-
-        # print_image doesn't print masked arrays
+        YII = np.divide(Fv, img, where=np.logical_and(mask > 0, img > 0))
         cv2.imwrite(os.path.join(fmaxdir, outfn + '_fvfm.tif'), YII)
-        cv2.imwrite(os.path.join(fmaxdir, outfn + '_fmax.tif'), img)
+
+        NPQ = np.divide(img, img, where=mask > 0) - 1
         # NPQ will always be an array of 0s
+        cv2.imwrite(os.path.join(fmaxdir, outfn + '_fmax.tif'), img)
 
     else:
         #use cv2 to read image becase pcv.readimage will save as input_image.png overwriting img
@@ -119,7 +118,7 @@ def image_avg(fundf):
 
         # compute NPQ
         Fm = cv2.imread(os.path.join(fmaxdir, basefn + '-FvFm_fmax.tif'), -1)
-        NPQ = np.subtract(np.divide(Fm, img, where = np.logical_and(newmask > 0, img > 0)),1, where = newmask > 0)
+        NPQ = np.subtract(np.divide(Fm, img, where=np.logical_and(newmask > 0, img > 0)), 1, where=newmask > 0)
         cv2.imwrite(os.path.join(fmaxdir, outfn + '_npq.tif'), NPQ)
 
     # Make as many copies of incoming dataframe as there are ROIs
@@ -269,7 +268,7 @@ def image_avg(fundf):
 
 
 # %% Setup output
-pcv.params.debug = 'plot'
+pcv.params.debug = 'print'
 # importlib.reload(createmasks)
 if pcv.params.debug == 'print':
     import shutil
@@ -277,15 +276,15 @@ if pcv.params.debug == 'print':
 
 # %% Compute image average and std for min/max fluorescence
 # must group so there are pair of images Fp and Fmp or Fo and Fm. make sure df was sorted by datetime and imageid at least
-df = df.sort_values(['exp','metadata1', 'imageid'])
+df = df.sort_values(['treatment','sampleid', 'imageid'])
 # this only works if every category is represented in the first day in the dataframe
 param_order = df.parameter.unique()
 df['parameter'] = pd.Categorical(df.parameter, categories=param_order, ordered=True)
 
 # # start testing
-df2 = df.query('(exp == "experiment1")')
+# df2 = df.query('(treatment == "drought")')
 # del df2
-fundf=df2.iloc[[4,5]]
+# fundf=df2.iloc[[4,5]]
 # del fundf
 # # # fundf
 # # end testing
@@ -298,7 +297,7 @@ if 'df2' not in globals():
 else:
     print('df2 already exists!')
 
-dfgrps = df2.groupby(['exp', 'jobdate', 'parameter'])
+dfgrps = df2.groupby(['treatment', 'jobdate', 'parameter'])
 grplist = []
 for grp, grpdf in dfgrps:
     # print('%s ----' % grpdf.parameter)
@@ -310,11 +309,11 @@ df_avg = pd.concat(grplist)
 gtypeinfo = pd.read_csv(os.path.join(indir,'genotype_map.csv'))
 df_avg = (pd.merge(df_avg,
                    gtypeinfo,
-                   on=['exp', 'roi'],
+                   on=['treatment', 'roi'],
                    how='outer')
           )
 
-(df_avg.sort_values(['exp', 'date', 'imageid'])
+(df_avg.sort_values(['treatment', 'date', 'imageid'])
        .to_csv(os.path.join(outdir, 'output_psII_level0.csv'), na_rep='nan', float_format='%.4f', index=False)
  )
 
