@@ -295,8 +295,7 @@ param_order = df.parameter.unique()
 df['parameter'] = pd.Categorical(df.parameter, categories=param_order, ordered=True)
 
 # # start testing
-# df2 = df.query('(treatment == "fluc" & sampleid == "tray1")')
-# nonfluc, 2019-06-21, 2019-06-21, tray1, 9, fluclight_data/pimframes/nonfluc-20190621-tray1-9.tif, Fp, 60, 4,
+# df2 = df.query('(treatment == "drought" & sampleid == "sample1")')
 # del df2
 # fundf = df2
 # fundf=df2.iloc[[2,3]]
