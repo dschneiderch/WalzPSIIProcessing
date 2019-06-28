@@ -1,5 +1,5 @@
-treatment,roi, gtype
-drought, 0, WT
-drought, 1, m1
-drought, 2, m1
-drought, 3, WT
+treatment,sampleid,roi,gtype
+drought,sample1,0,WT
+drought,sample1,1,m1
+drought,sample1,2,m1
+drought,sample1,3,WT

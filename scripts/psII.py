@@ -106,7 +106,7 @@ def image_avg(fundf):
         
         # compute fvfm
         Fv, hist_fvfm = pcv.fluor_fvfm(fdark = fdark, fmin = imgmin, fmax=img, mask=mask, bins=128)
-        YII = np.divide(Fv, img, out=out_flt, where=np.logical_and(mask > 0, img > 0))
+        YII = np.divide(Fv, img, out=out_flt.copy(), where=np.logical_and(mask > 0, img > 0))
         cv2.imwrite(os.path.join(fmaxdir, outfn + '_fvfm.tif'), YII)
 
         NPQ = np.zeros_like(YII)
