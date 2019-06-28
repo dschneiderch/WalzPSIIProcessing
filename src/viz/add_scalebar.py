@@ -4,7 +4,7 @@ import matplotlib.font_manager as fm
 
 def add_scalebar(pseudoimg, pixelresolution, barwidth, barlocation='lower center', fontprops=None, scalebar=None):
     if fontprops is None:
-        fontprops = fm.FontProperties(family='Arial', size=18, weight='bold')
+        fontprops = fm.FontProperties(size=18, weight='bold')
 
     ax = pseudoimg.gca()
     barwidth = 20  # mm
