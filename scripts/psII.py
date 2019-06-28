@@ -55,6 +55,11 @@ from src.segmentation import createmasks
 # importlib.reload(createmasks)  #you can use this to reload the module when you're iterating
 from src.viz import custom_colormaps
 #importlib.reload(custom_colormaps)
+
+# %% Setup output
+pcv.params.debug = 'plot'  # 'print' #'plot', 'None'
+# pcv.params.debug = 'None'
+plt.rcParams["figure.figsize"] = (9, 9)
 # %% image fucntion
 
 def image_avg(fundf):
@@ -86,6 +91,7 @@ def image_avg(fundf):
     imgmin, _, _ = pcv.readimage(fn_min)
     img, _, _ = pcv.readimage(fn_max)
     fdark = np.zeros_like(img)
+    out_flt = fdark.astype('float32')  # <- needs to be float32 for imwrite
 
     if param_name == 'FvFm':
         # create mask 
@@ -97,15 +103,17 @@ def image_avg(fundf):
 
         #setup individual roi plant masks
         newmask = np.zeros(np.shape(mask), dtype='uint8')
-
+        
         # compute fvfm
         Fv, hist_fvfm = pcv.fluor_fvfm(fdark = fdark, fmin = imgmin, fmax=img, mask=mask, bins=128)
-        YII = np.divide(Fv, img, where=np.logical_and(mask > 0, img > 0))
+        YII = np.divide(Fv, img, out=out_flt, where=np.logical_and(mask > 0, img > 0))
         cv2.imwrite(os.path.join(fmaxdir, outfn + '_fvfm.tif'), YII)
 
-        NPQ = np.divide(img, img, where=mask > 0) - 1
-        # NPQ will always be an array of 0s
+        NPQ = np.zeros_like(YII)
+
+        # print Fm
         cv2.imwrite(os.path.join(fmaxdir, outfn + '_fmax.tif'), img)
+        # NPQ will always be an array of 0s
 
     else:
         #use cv2 to read image becase pcv.readimage will save as input_image.png overwriting img
@@ -113,12 +121,17 @@ def image_avg(fundf):
 
         # compute YII
         Fvp, hist_yii = pcv.fluor_fvfm(fdark, fmin = imgmin, fmax = img, mask = newmask, bins = 128)
-        YII = np.divide(Fvp, img, where = np.logical_and(newmask > 0, img > 0))
-        cv2.imwrite(os.path.join(fmaxdir, outfn + '_yii.tif'), YII)
+        # make sure to initialize with out=. using where= provides random values at False pixels. you will get a strange result. newmask comes from Fm instead of Fm' so they can be different
+        #newmask<0, img>0 = FALSE: not part of plant but fluorescence detected.
+        #newmask>0, img<=0 = FALSE: part of plant in Fm but no fluorescence detected <- this is likely the culprit because pcv.apply_mask doesn't always solve issue.
+        YII = np.divide(Fvp, img, out=out_flt.copy(), where=np.logical_and(newmask > 0, img > 0)) 
+        cv2.imwrite(os.path.join(fmaxdir, outfn + '_yii.tif'), YII) 
 
         # compute NPQ
         Fm = cv2.imread(os.path.join(fmaxdir, basefn + '-FvFm_fmax.tif'), -1)
-        NPQ = np.subtract(np.divide(Fm, img, where=np.logical_and(newmask > 0, img > 0)), 1, where=newmask > 0)
+        NPQ = np.divide(Fm, img, out=out_flt.copy(),
+                         where=np.logical_and(newmask > 0, img > 0))
+        NPQ = np.subtract(NPQ, 1, out=NPQ, where=newmask > 0)
         cv2.imwrite(os.path.join(fmaxdir, outfn + '_npq.tif'), NPQ)
 
     # Make as many copies of incoming dataframe as there are ROIs
@@ -137,7 +150,7 @@ def image_avg(fundf):
     ithroi = []
     inbounds = []
     i = 0
-    rh = roi_h[i]
+    rc = roi_c[i]
     for i, rc in enumerate(roi_c):
         # Store iteration Number
         ithroi.append(int(i))
@@ -223,12 +236,12 @@ def image_avg(fundf):
                 imgdir = os.path.join(imgdir, 'IndC')
                 os.makedirs(imgdir, exist_ok=True)
                 npq_img = pcv.visualize.pseudocolor(NPQ, obj=figframe, mask=plant_mask, cmap='inferno', axes=False, min_value=0, max_value=2.5, background='black', obj_padding=0)
-                npq_img = add_scalebar.add_scalebar(npq_img, barwidth=20, pixelresolution=0.2)
+                npq_img = add_scalebar.add_scalebar(npq_img, pixelresolution=0.2, barwidth=20, barlocation='lower right')
                 npq_img.savefig(os.path.join(imgdir, outfn + '_roi' + str(i) + '_NPQ.png'), bbox_inches='tight')
                 npq_img.clf()
 
             yii_img = pcv.visualize.pseudocolor(YII, obj=figframe, mask=plant_mask, cmap=custom_colormaps.get_cmap('imagingwin'), axes=False, min_value=0, max_value=1, background='black', obj_padding=0)
-            yii_img = add_scalebar.add_scalebar(yii_img, barwidth = 20, pixelresolution = 0.2)
+            yii_img = add_scalebar.add_scalebar(yii_img, pixelresolution=0.2, barwidth=20, barlocation='lower right')
             yii_img.savefig(os.path.join(imgdir, outfn + '_roi' + str(i) + '_YII.png'), bbox_inches='tight')
             yii_img.clf()
         # end len(roi) > 0
@@ -241,12 +254,12 @@ def image_avg(fundf):
 
     # save pseudocolor of all plants in image
     npq_img = pcv.visualize.pseudocolor(NPQ, obj=None, mask=newmask, cmap='inferno', axes=False, min_value=0, max_value=2.5, background='black', obj_padding=0)
-    npq_img = add_scalebar.add_scalebar(npq_img, barwidth=20, pixelresolution=0.2)
+    npq_img = add_scalebar.add_scalebar(npq_img, pixelresolution = 0.2, barwidth = 20, barlocation='lower right')
     npq_img.savefig(os.path.join(imgdir, outfn + '_NPQ.png'), bbox_inches='tight')
     npq_img.clf()
 
     yii_img = pcv.visualize.pseudocolor(YII, obj=None, mask=newmask, cmap=custom_colormaps.get_cmap('imagingwin'), axes=False, min_value=0, max_value=1, background='black', obj_padding=0)
-    yii_img = add_scalebar.add_scalebar(yii_img, barwidth = 20, pixelresolution = 0.2)
+    yii_img = add_scalebar.add_scalebar(yii_img, pixelresolution = 0.2, barwidth = 20, barlocation = 'lower right')
     yii_img.savefig(os.path.join(imgdir, outfn + '_YII.png'), bbox_inches='tight')
     yii_img.clf()
 
@@ -268,7 +281,7 @@ def image_avg(fundf):
 
 
 # %% Setup output
-pcv.params.debug = 'print'
+pcv.params.debug = 'None'
 # importlib.reload(createmasks)
 if pcv.params.debug == 'print':
     import shutil
@@ -282,9 +295,11 @@ param_order = df.parameter.unique()
 df['parameter'] = pd.Categorical(df.parameter, categories=param_order, ordered=True)
 
 # # start testing
-# df2 = df.query('(treatment == "drought")')
+# df2 = df.query('(treatment == "fluc" & sampleid == "tray1")')
+# nonfluc, 2019-06-21, 2019-06-21, tray1, 9, fluclight_data/pimframes/nonfluc-20190621-tray1-9.tif, Fp, 60, 4,
 # del df2
-# fundf=df2.iloc[[4,5]]
+# fundf = df2
+# fundf=df2.iloc[[2,3]]
 # del fundf
 # # # fundf
 # # end testing
@@ -297,23 +312,23 @@ if 'df2' not in globals():
 else:
     print('df2 already exists!')
 
-dfgrps = df2.groupby(['treatment', 'jobdate', 'parameter'])
+dfgrps = df2.groupby(['treatment', 'sampleid', 'jobdate', 'parameter'])
 grplist = []
 for grp, grpdf in dfgrps:
-    # print('%s ----' % grpdf.parameter)
+    # print(grp)#'%s ---' % (grp))
     grplist.append(image_avg(grpdf))
 df_avg = pd.concat(grplist)
 
 
 # %% Add genotype information
 gtypeinfo = pd.read_csv(os.path.join(indir,'genotype_map.csv'))
-df_avg = (pd.merge(df_avg,
+df_avg2 = (pd.merge(df_avg,
                    gtypeinfo,
-                   on=['treatment', 'roi'],
+                   on=['treatment', 'sampleid', 'roi'],
                    how='outer')
           )
 
-(df_avg.sort_values(['treatment', 'date', 'imageid'])
+(df_avg2.sort_values(['treatment', 'date', 'sampleid', 'imageid'])
        .to_csv(os.path.join(outdir, 'output_psII_level0.csv'), na_rep='nan', float_format='%.4f', index=False)
  )
 
