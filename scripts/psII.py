@@ -280,7 +280,7 @@ def image_avg(fundf):
 
 
 # %% Setup output
-pcv.params.debug = 'None'
+pcv.params.debug = 'print'
 # importlib.reload(createmasks)
 if pcv.params.debug == 'print':
     import shutil
