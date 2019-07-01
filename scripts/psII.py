@@ -129,8 +129,7 @@ def image_avg(fundf):
 
         # compute NPQ
         Fm = cv2.imread(os.path.join(fmaxdir, basefn + '-FvFm_fmax.tif'), -1)
-        NPQ = np.divide(Fm, img, out=out_flt.copy(),
-                         where=np.logical_and(newmask > 0, img > 0))
+        NPQ = np.divide(Fm, img, out=out_flt.copy(), where=np.logical_and(newmask > 0, img > 0))
         NPQ = np.subtract(NPQ, 1, out=NPQ, where=newmask > 0)
         cv2.imwrite(os.path.join(fmaxdir, outfn + '_npq.tif'), NPQ)
 
