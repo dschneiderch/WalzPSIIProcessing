@@ -11,8 +11,13 @@ import numpy as np
 from datetime import datetime, timedelta
 import importlib
 from matplotlib import pyplot as plt
-from src.util import masked_stats
+from src.data import import_snapshots
 from src.viz import add_scalebar
+from src.viz import custom_colormaps
+#importlib.reload(custom_colormaps)
+
+# importlib.reload(analyze_yii)
+
 # %% io directories
 indir = 'example_data'
 outdir = os.path.join('output', 'from_' + indir)
@@ -29,7 +34,6 @@ os.makedirs(fluordir, exist_ok=True)
 pixelresolution = 0.2
 
 # %% Import tif files
-from src.data import import_snapshots
 # importlib.reload(import_snapshots)
 fdf = import_snapshots.import_snapshots(indir, 'psii')
 
@@ -53,13 +57,12 @@ df = df.query(
 # %% Import function to make mask and setup image classifications
 from src.segmentation import createmasks
 # importlib.reload(createmasks)  #you can use this to reload the module when you're iterating
-from src.viz import custom_colormaps
-#importlib.reload(custom_colormaps)
 
 # %% Setup output
 pcv.params.debug = 'plot'  # 'print' #'plot', 'None'
 # pcv.params.debug = 'None'
-plt.rcParams["figure.figsize"] = (9, 9)
+plt.rcParams["figure.figsize"] = (12, 12)
+
 # %% image fucntion
 
 def image_avg(fundf):
@@ -86,12 +89,12 @@ def image_avg(fundf):
             os.makedirs(debug_outdir)
         pcv.params.debug_outdir = debug_outdir
 
-    #read images and create mask from max fluorescence
+    # read images and create mask from max fluorescence
     # read image as is. only gray values in PSII images
     imgmin, _, _ = pcv.readimage(fn_min)
     img, _, _ = pcv.readimage(fn_max)
     fdark = np.zeros_like(img)
-    out_flt = fdark.astype('float32')  # <- needs to be float32 for imwrite
+    # out_flt = fdark.astype('float32')  # <- needs to be float32 for imwrite
 
     if param_name == 'FvFm':
         # create mask 
@@ -102,12 +105,11 @@ def image_avg(fundf):
         roi_c, roi_h = pcv.roi.multi(img, coord=(240, 180), radius=30, spacing=(150, 150), ncols=2, nrows=2)
 
         #setup individual roi plant masks
-        newmask = np.zeros(np.shape(mask), dtype='uint8')
+        newmask = np.zeros_like(mask)
         
         # compute fvfm
-        Fv, hist_fvfm = pcv.fluor_fvfm(fdark = fdark, fmin = imgmin, fmax=img, mask=mask, bins=128)
-        YII = np.divide(Fv, img, out=out_flt.copy(), where=np.logical_and(mask > 0, img > 0))
-        cv2.imwrite(os.path.join(fmaxdir, outfn + '_fvfm.tif'), YII)
+        YII, hist_fvfm = pcv.photosynthesis.analyze_yii(fdark = fdark, fmin = imgmin, fmax=img, mask=mask, bins=128, parameter = 'Fv/Fm')
+        cv2.imwrite(os.path.join(fmaxdir, outfn + '_fvfm.tif'), YII.astype('float32'))
 
         NPQ = np.zeros_like(YII)
 
@@ -120,18 +122,15 @@ def image_avg(fundf):
         newmask = cv2.imread(os.path.join(maskdir, basefn + '-FvFm_mask.png'), -1)
 
         # compute YII
-        Fvp, hist_yii = pcv.fluor_fvfm(fdark, fmin = imgmin, fmax = img, mask = newmask, bins = 128)
-        # make sure to initialize with out=. using where= provides random values at False pixels. you will get a strange result. newmask comes from Fm instead of Fm' so they can be different
-        #newmask<0, img>0 = FALSE: not part of plant but fluorescence detected.
-        #newmask>0, img<=0 = FALSE: part of plant in Fm but no fluorescence detected <- this is likely the culprit because pcv.apply_mask doesn't always solve issue.
-        YII = np.divide(Fvp, img, out=out_flt.copy(), where=np.logical_and(newmask > 0, img > 0)) 
-        cv2.imwrite(os.path.join(fmaxdir, outfn + '_yii.tif'), YII) 
+        YII, hist_yii = pcv.photosynthesis.analyze_yii(fdark = fdark, fmin=imgmin, fmax=img, mask=newmask, bins=64, parameter=param_name)
+        cv2.imwrite(os.path.join(fmaxdir, outfn + '_yii.tif'), YII.astype('float32')) 
 
+        # importlib.reload(analyze_npq)
+        # pcv.params.debug='plot'
         # compute NPQ
         Fm = cv2.imread(os.path.join(fmaxdir, basefn + '-FvFm_fmax.tif'), -1)
-        NPQ = np.divide(Fm, img, out=out_flt.copy(), where=np.logical_and(newmask > 0, img > 0))
-        NPQ = np.subtract(NPQ, 1, out=out_flt.copy(), where=np.logical_and(NPQ>=1,newmask > 0))
-        cv2.imwrite(os.path.join(fmaxdir, outfn + '_npq.tif'), NPQ)
+        NPQ, hist_npq = pcv.photosynthesis.analyze_npq(fm = Fm, fmax = img, mask = newmask, bins = 64)
+        cv2.imwrite(os.path.join(fmaxdir, outfn + '_npq.tif'), NPQ.astype('float32'))
 
     # Make as many copies of incoming dataframe as there are ROIs
     outdf = fundf.copy()
@@ -186,17 +185,17 @@ def image_avg(fundf):
             if param_name == 'FvFm':
                 newmask = pcv.image_add(newmask, plant_mask)
 
-            frame_avg.append(masked_stats.mean(imgmin, plant_mask))
-            frame_avg.append(masked_stats.mean(img, plant_mask))
+            frame_avg.append(pcv.masked_stats.mean(imgmin, plant_mask))
+            frame_avg.append(pcv.masked_stats.mean(img, plant_mask))
             # need double because there are two images per loop
-            yii_avg.append(masked_stats.mean(YII, plant_mask))
-            yii_avg.append(masked_stats.mean(YII, plant_mask))
-            yii_std.append(masked_stats.std(YII, plant_mask))
-            yii_std.append(masked_stats.std(YII, plant_mask))
-            npq_avg.append(masked_stats.mean(NPQ, plant_mask))
-            npq_avg.append(masked_stats.mean(NPQ, plant_mask))
-            npq_std.append(masked_stats.std(NPQ, plant_mask))
-            npq_std.append(masked_stats.std(NPQ, plant_mask))
+            yii_avg.append(pcv.masked_stats.mean(YII, plant_mask))
+            yii_avg.append(pcv.masked_stats.mean(YII, plant_mask))
+            yii_std.append(pcv.masked_stats.std(YII, plant_mask))
+            yii_std.append(pcv.masked_stats.std(YII, plant_mask))
+            npq_avg.append(pcv.masked_stats.mean(NPQ, plant_mask))
+            npq_avg.append(pcv.masked_stats.mean(NPQ, plant_mask))
+            npq_std.append(pcv.masked_stats.std(NPQ, plant_mask))
+            npq_std.append(pcv.masked_stats.std(NPQ, plant_mask))
             inbounds.append(pcv.within_frame(plant_mask))
             inbounds.append(pcv.within_frame(plant_mask))
             plantarea.append(obj_area * pixelresolution**2.)
@@ -239,6 +238,8 @@ def image_avg(fundf):
                 npq_img.savefig(os.path.join(imgdir, outfn + '_roi' + str(i) + '_NPQ.png'), bbox_inches='tight')
                 npq_img.clf()
 
+            # from src.viz import mycolor
+            # importlib.reload(mycolor)
             yii_img = pcv.visualize.pseudocolor(YII, obj=figframe, mask=plant_mask, cmap=custom_colormaps.get_cmap('imagingwin'), axes=False, min_value=0, max_value=1, background='black', obj_padding=0)
             yii_img = add_scalebar.add_scalebar(yii_img, pixelresolution=0.2, barwidth=20, barlocation='lower right')
             yii_img.savefig(os.path.join(imgdir, outfn + '_roi' + str(i) + '_YII.png'), bbox_inches='tight')
@@ -266,7 +267,7 @@ def image_avg(fundf):
     isunique = yii_avg.count(yii_avg[0]) != len(yii_avg)
 
     # save all values to outgoing dataframe
-    outdf['roi'] = ithroi
+    outdf['roi'] = ithroi   
     outdf['frame_avg'] = frame_avg
     outdf['yii_avg'] = yii_avg
     outdf['npq_avg'] = npq_avg
@@ -280,7 +281,7 @@ def image_avg(fundf):
 
 
 # %% Setup output
-pcv.params.debug = 'None'
+pcv.params.debug = 'print'
 # importlib.reload(createmasks)
 if pcv.params.debug == 'print':
     import shutil
@@ -297,7 +298,7 @@ df['parameter'] = pd.Categorical(df.parameter, categories=param_order, ordered=T
 # df2 = df.query('(treatment == "drought")')
 # del df2
 # fundf = df2
-# fundf=df2.iloc[[2,3]]
+# fundf=df2.iloc[[0,1]]
 # del fundf
 # # # fundf
 # # end testing
