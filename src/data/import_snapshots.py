@@ -46,7 +46,6 @@ def import_snapshots(snapshotdir, camera='vis'):
     # convert image id from string to integer that can be sorted numerically
     fdf['imageid'] = fdf.imageid.astype('uint8')
     fdf = fdf.sort_values(['treatment','date','sampleid'])
-
     fdf = fdf.set_index(['treatment','date','jobdate'])
     # check for duplicate jobs of the same sample on the same day.  if jobs_removed.csv isnt blank then you shyould investigate!
     #dups = fdf.reset_index('datetime',drop=False).set_index(['imageid'],append=True).index.duplicated(keep='first')

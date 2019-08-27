@@ -228,6 +228,7 @@ def image_avg(fundf):
 
             # print pseduocolor
             imgdir = os.path.join(outdir, 'pseudocolor_images', sampleid, 'roi'+str(i))
+            
             if param_name == 'FvFm':
                 imgdir = os.path.join(imgdir, 'fvfm')
                 os.makedirs(imgdir, exist_ok=True)
