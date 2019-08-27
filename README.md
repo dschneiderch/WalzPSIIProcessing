@@ -11,11 +11,11 @@ Additionally you will need pimframes_map.csv to describe each frame and genotype
 
 The contents of `data/genotype_map.csv` should have 3 column headers EXACTLY as specified here:
 ```
-treatment,roi,gtype
-drought, 0, WT
-drought, 1, m1
-drought, 2, m1
-drought, 3, WT
+treatment, sampleid, roi, gtype
+drought, sample1, 0, WT
+drought, sample1, 1, m1
+drought, sample1, 2, m1
+drought, sample1, 3, WT
 ```
 The contents of `data/pimframes.csv` should have 3 column headers EXACTLY as specified here:
 
