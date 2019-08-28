@@ -261,7 +261,7 @@ def image_avg(fundf):
                                                     background='black',
                                                     obj_padding=0)
                 npq_img = add_scalebar.add_scalebar(npq_img,
-                                                    pixelresolution=pixelresolution,
+                                                    pixelresolution = pixelresolution,
                                                     barwidth=20,
                                                     barlocation='lower right')
                 npq_img.savefig(os.path.join(
@@ -282,7 +282,7 @@ def image_avg(fundf):
                 obj_padding=0
             )
             yii_img = add_scalebar.add_scalebar(yii_img,
-                                                pixelresolution=0.2,
+                                                pixelresolution=pixelresolution,
                                                 barwidth=20,
                                                 barlocation='lower right')
             yii_img.savefig(os.path.join(imgdir,
