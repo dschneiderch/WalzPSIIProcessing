@@ -5,6 +5,8 @@ You will need to export your .pim files to multiframe .tifs and then drop them i
 
 They should be labeled with exactly 2 dashes, 2 descriptors, and a date: e.g. drought-20190501-sample1.tif
 
+Additionally you will need `pimframes_map.csv` to describe each frame and `genotype_map.csv` to describe the genotype of each plant. See `example_data/` for guidance.
+
 It is assumed the first descriptor is the treatment, the second descriptor is a sample number.
 
 Additionally you will need pimframes_map.csv to describe each frame and genotype_map.csv to describe the genotype of each plant. It is important that metadata of your filename descriptors and your images match.
